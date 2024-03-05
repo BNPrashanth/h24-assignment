@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Home24 - Assignment</title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				font-family: Arial, sans-serif;
+				width: 100%;
+				height: 100vh;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				color: #ffffff;
+			}
+			
+			section {
+				width: 100%;
+				max-width: 900px;
+				height: 90vh;
+			}
+
+			.header {
+				width: 100%;
+				height: 100px;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				background-color: #354044;
+				color: #ffffff;
+			}
+
+			h2 {
+				margin: 6px;
+				padding: 0;
+			}
+
+			h3 {
+				margin: 4px;
+				padding: 0;
+			}
+
+			h4 {
+				margin: 4px;
+				padding: 0;
+			}
+
+			.container {
+				width: 100%;
+				height: calc(90vh - 100px);
+				display: flex;
+				justify-content: center;
+				background-color: #5b6366;
+				overflow: scroll;
+			}
+			
+			.form-wrapper {
+				/* width: 100%; */
+				display: flex;
+				flex-direction: column;
+				padding: 20px 40px;
+			}
+
+			.form {
+				margin-left: 60px;
+			}
+
+			.form-button {
+				margin-left: 16px;
+				padding: 8px 20px;
+				background-color: #354044;
+				color: #ffffff;
+				border: none;
+				cursor: pointer;
+				border-radius: 4px;
+			}
+
+			.form-button:hover {
+				background-color: #000000;
+			}
+
+			.form-input {
+				padding: 8px 16px;
+				border: none;
+				border-radius: 4px;
+				margin-left: 24px;
+				width: 240px;
+			}
+
+			.form-error {
+				display: none;
+				color: #ff4040;
+				font-size: 12px;
+				margin-left: 153px;
+				margin-top: 8px;
+			}
+
+			#results {
+				display: none;
+				margin-top: 20px;
+				padding: 20px;
+				background-color: #354044;
+				border-radius: 4px;
+				max-width: 600px;
+			}
+
+			#error-results {
+				display: none;
+				margin-top: 20px;
+				margin-bottom: 20px;
+				padding: 20px;
+				background-color: #354044;
+				border-radius: 4px;
+				max-width: 600px;
+			}
+
+			#error-results h4 {
+				color: #ff4040;
+			}
+
+			#error-status {
+				display: none;
+			}
+
+			.loader-wrapper {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+
+			li {
+				margin: 4px 0px;
+			}
+
+			#loader {
+				display: none;
+				border: 16px solid #f3f3f3;
+				border-radius: 50%;
+				border-top: 16px solid #354044;
+				width: 80px;
+				height: 80px;
+				-webkit-animation: spin 2s linear infinite;
+				animation: spin 2s linear infinite;
+				margin-top: 16px;
+			}
+
+			@-webkit-keyframes spin {
+				0% { -webkit-transform: rotate(0deg); }
+				100% { -webkit-transform: rotate(360deg); }
+			}
+
+			@keyframes spin {
+				0% { transform: rotate(0deg); }
+				100% { transform: rotate(360deg); }
+			}
+		</style>
+
+		<script type="text/javascript">
+			const submitForm = async () => {
+				const urlValue = document.getElementById('url').value;
+				console.log(urlValue);
+
+				document.getElementById('results').style.display = 'none';
+				document.getElementById('error-results').style.display = 'none';
+				document.getElementById('error-status').style.display = 'none';
+
+				if (!urlValue) {
+					// alert('Please provide a URL/link to the web-page you want to analyse.');
+
+					const urlErrorElement = document.getElementById('url-error');
+					urlErrorElement.style.display = 'block';
+
+					return;
+				}
+
+				// Display the loader
+				document.getElementById('loader').style.display = 'block';
+
+				try {
+					const response = await fetch('{{.BaseURL}}/analyse', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ url: urlValue })
+					});
+	
+					const data = await response.json();
+					console.log('Response:', data);
+
+					// Hide the loader
+					document.getElementById('loader').style.display = 'none';
+
+					if (data.success) {
+						document.getElementById('html-version').innerText = data.html_version || 'Could not identify the HTML version.';
+						document.getElementById('page-title').innerText = data.title || 'Could not identify the page title.';
+						
+						document.getElementById('headings-total').innerText = `Total: ${data?.headings?.count}`;
+						document.getElementById('headings-h1').innerText = `H1: ${data?.headings?.h1?.count}`;
+						document.getElementById('headings-h2').innerText = `H2: ${data?.headings?.h2?.count}`;
+						document.getElementById('headings-h3').innerText = `H3: ${data?.headings?.h3?.count}`;
+						document.getElementById('headings-h4').innerText = `H4: ${data?.headings?.h4?.count}`;
+						document.getElementById('headings-h5').innerText = `H5: ${data?.headings?.h5?.count}`;
+						document.getElementById('headings-h6').innerText = `H6: ${data?.headings?.h6?.count}`;
+						
+						document.getElementById('links-total').innerText = `Total: ${data?.links?.count}`;
+						document.getElementById('links-internal').innerText = `Internal: ${data?.links?.internal_count}`;
+						document.getElementById('links-external').innerText = `External: ${data?.links?.external_count}`;
+						document.getElementById('links-inaccessible').innerText = `Inaccessible: ${data?.links?.inactive_count}`;
+	
+						document.getElementById('login-form').innerText = data?.login_form ? 'Yes' : 'No';
+	
+						document.getElementById('results').style.display = 'block';
+					} else {
+						document.getElementById('error-message').innerText = data?.message || 'Failed to fetch response from the server.';
+						document.getElementById('error-dev-message').innerText = data.dev_message || 'Failed to fetch response from the server.';
+						if (data.status > 0) {
+							document.getElementById('error-status').innerText = `HTTP Status: ${data.status}`;
+						document.getElementById('error-status').style.display = 'block';
+						}
+						
+						document.getElementById('error-results').style.display = 'block';
+					}
+				} catch (error) {
+					// Hide the loader
+					document.getElementById('loader').style.display = 'none';
+					console.error('Error:', error);
+					
+					document.getElementById('error-message').innerText = error.message || 'Failed to fetch response from the server.';
+					document.getElementById('error-dev-message').innerText = error.dev_message || 'Failed to fetch response from the server.';
+					if (error.status > 0) {
+						document.getElementById('error-status').innerText = `HTTP Status: ${error.status}`;
+						document.getElementById('error-status').style.display = 'block';
+					}
+
+					document.getElementById('error-results').style.display = 'block';
+				}
+			};
+		</script>
+	</head>
+	<body>
+		<section class="header">
+			<h2>Home24 Assignment</h2>
+			<h3>Web-page/URL Analyser</h3>
+		</section>
+		<section class="container">
+			<div class="form-wrapper">
+				<p>Provide the URL/link to the web-page you want analyse</p>
+				<div class="form">
+					<label class="form-label" for="url">URL/link:</label>
+					<input id="url" class="form-input" type="text" name="url" placeholder="URL/link" required>
+					<button class="form-button" onclick="submitForm()">Analyse</button>
+				</div>
+				<div id="url-error" class="form-error">
+					<span>Please provide a valid value for URL/link.</span>
+				</div>
+
+				<div class="loader-wrapper">
+					<div id="loader"></div>
+				</div>
+
+				<!-- Display the results here -->
+				<div id="results">
+					<!-- Results will be displayed here -->
+					<h4>Here is your result:</h4>
+					<ul>
+						<li>HTML Version:</li>
+						<ul>
+							<li id="html-version"></li>
+						</ul>
+
+						<li>Page Title:</li>
+						<ul>
+							<li id="page-title">.</li>
+						</ul>
+
+						<li>Headings</li>
+						<ul>
+							<li id="headings-total"></li>
+							<li id="headings-h1"></li>
+							<li id="headings-h2"></li>
+							<li id="headings-h3"></li>
+							<li id="headings-h4"></li>
+							<li id="headings-h5"></li>
+							<li id="headings-h6"></li>
+						</ul>
+
+						<li>Links</li>
+						<ul>
+							<li id="links-total"></li>
+							<li id="links-internal"></li>
+							<li id="links-external"></li>
+							<li id="links-inaccessible"></li>
+						</ul>
+
+						<li>Has a login form?</li>
+						<ul>
+							<li id="login-form"></li>
+						</ul>
+					</ul>
+				</div>
+
+				<div id="error-results">
+					<h4>Oops, the request resulted in an error:</h4>
+					<p id="error-message"></p>
+					<li id="error-dev-message"></li>
+					<li id="error-status"></li>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>
