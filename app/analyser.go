@@ -15,6 +15,8 @@ import (
 	"github.com/BNPrashanth/h24-assignment/models"
 )
 
+const genericErrorMessage = "Oops, something went wrong. Please try again later."
+
 func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 	params := models.ParseRequestParams{}
 
@@ -25,7 +27,7 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error occured while decoding parameters:", err.Error())
 
 		parseError := models.ParseResponseError{
-			Message:    "Oops, something went wrong. Please try again later.",
+			Message:    genericErrorMessage,
 			DevMessage: err.Error(),
 			Success:    false,
 		}
@@ -55,7 +57,7 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error occured while sending request:", err.Error())
 
 		parseError := models.ParseResponseError{
-			Message:    "Oops, something went wrong. Please try again later.",
+			Message:    genericErrorMessage,
 			DevMessage: err.Error(),
 			Success:    false,
 		}
@@ -85,7 +87,7 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error occured while reading response body:", err.Error())
 
 		parseError := models.ParseResponseError{
-			Message:    "Oops, something went wrong. Please try again later.",
+			Message:    genericErrorMessage,
 			DevMessage: err.Error(),
 			Success:    false,
 		}
@@ -103,7 +105,7 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error occured while parsing the response body via goquery:", err.Error())
 
 		parseError := models.ParseResponseError{
-			Message:    "Oops, something went wrong. Please try again later.",
+			Message:    genericErrorMessage,
 			DevMessage: err.Error(),
 			Success:    false,
 		}
@@ -168,8 +170,8 @@ func getHTMLVersion(htmlString string) string {
 	}
 
 	// Check if the document is HTML3.2
-	dtdHtml3_2Index := strings.Index(htmlString, "dtd html 3.2")
-	if docTypeIndex < htmlTagIndex && dtdHtml3_2Index > docTypeIndex && dtdHtml3_2Index < htmlTagIndex {
+	dtdHtml32Index := strings.Index(htmlString, "dtd html 3.2")
+	if docTypeIndex < htmlTagIndex && dtdHtml32Index > docTypeIndex && dtdHtml32Index < htmlTagIndex {
 		return "HTML 3.2"
 	}
 
