@@ -32,8 +32,9 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 			Success:    false,
 		}
 
-		json.NewEncoder(w).Encode(parseError)
-		http.Error(w, "", http.StatusBadRequest)
+		response, _ := json.Marshal(parseError)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(response)
 		return
 	}
 
@@ -45,8 +46,9 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 			Success: false,
 		}
 
-		json.NewEncoder(w).Encode(parseError)
-		http.Error(w, "", http.StatusBadRequest)
+		response, _ := json.Marshal(parseError)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(response)
 		return
 	}
 
@@ -62,8 +64,9 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 			Success:    false,
 		}
 
-		json.NewEncoder(w).Encode(parseError)
-		http.Error(w, "", http.StatusInternalServerError)
+		response, _ := json.Marshal(parseError)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
 		return
 	}
 	defer resp.Body.Close()
@@ -77,8 +80,9 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 			Success: false,
 		}
 
-		json.NewEncoder(w).Encode(parseError)
-		http.Error(w, "", http.StatusInternalServerError)
+		response, _ := json.Marshal(parseError)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
 		return
 	}
 
@@ -92,8 +96,9 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 			Success:    false,
 		}
 
-		json.NewEncoder(w).Encode(parseError)
-		http.Error(w, "", http.StatusInternalServerError)
+		response, _ := json.Marshal(parseError)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
 		return
 	}
 	resp.Body.Close()
@@ -110,8 +115,9 @@ func HandleAnalyseWebPage(w http.ResponseWriter, r *http.Request) {
 			Success:    false,
 		}
 
-		json.NewEncoder(w).Encode(parseError)
-		http.Error(w, "", http.StatusInternalServerError)
+		response, _ := json.Marshal(parseError)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(response)
 		return
 	}
 
@@ -152,32 +158,37 @@ func getHTMLVersion(htmlString string) string {
 	docTypeIndex := strings.Index(htmlString, "<!doctype html")
 	htmlTagIndex := strings.Index(htmlString, "<html")
 
+	if htmlTagIndex < 0 {
+		return "HTML 1.0"
+	}
+
 	// Check if the document is HTML5
-	if strings.Index(htmlString, "<!doctype html>") < strings.Index(htmlString, "<html") {
+	html5Index := strings.Index(htmlString, "<!doctype html>")
+	if html5Index >= 0 && html5Index < htmlTagIndex {
 		return "HTML5"
 	}
 
 	// Check if the document is XHTML
-	dtdXHtmlIndex := strings.Index(htmlString, "dtd xhtml 1.1")
-	if docTypeIndex < htmlTagIndex && dtdXHtmlIndex > docTypeIndex && dtdXHtmlIndex < htmlTagIndex {
+	dtdXHtmlIndex := strings.Index(htmlString, "dtd xhtml 1.")
+	if dtdXHtmlIndex >= 0 && docTypeIndex < htmlTagIndex && dtdXHtmlIndex > docTypeIndex && dtdXHtmlIndex < htmlTagIndex {
 		return "XHTML"
 	}
 
 	// Check if the document is HTML4
 	dtdHtml4Index := strings.Index(htmlString, "dtd html 4.01")
-	if docTypeIndex < htmlTagIndex && dtdHtml4Index > docTypeIndex && dtdHtml4Index < htmlTagIndex {
-		return "HTML 4.1"
+	if dtdHtml4Index >= 0 && docTypeIndex < htmlTagIndex && dtdHtml4Index > docTypeIndex && dtdHtml4Index < htmlTagIndex {
+		return "HTML 4.01"
 	}
 
 	// Check if the document is HTML3.2
 	dtdHtml32Index := strings.Index(htmlString, "dtd html 3.2")
-	if docTypeIndex < htmlTagIndex && dtdHtml32Index > docTypeIndex && dtdHtml32Index < htmlTagIndex {
+	if dtdHtml32Index >= 0 && docTypeIndex < htmlTagIndex && dtdHtml32Index > docTypeIndex && dtdHtml32Index < htmlTagIndex {
 		return "HTML 3.2"
 	}
 
 	// Check if the document is HTML2.0
 	dtdHtml2Index := strings.Index(htmlString, "dtd html 2.0")
-	if docTypeIndex < htmlTagIndex && dtdHtml2Index > docTypeIndex && dtdHtml2Index < htmlTagIndex {
+	if dtdHtml2Index >= 0 && docTypeIndex < htmlTagIndex && dtdHtml2Index > docTypeIndex && dtdHtml2Index < htmlTagIndex {
 		return "HTML 2.0"
 	}
 
