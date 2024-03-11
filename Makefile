@@ -8,9 +8,9 @@ HAS_EXITED := $(shell docker ps -a | grep ${CONTAINER})
 
 run-debug:
 	@echo "+ $@"
-	@export BASE_URL=${BASE_URL}
-	@export PORT=${PORT}
-	@go run cmd/main.go
+	export BASE_URL=${BASE_URL} && \
+	export PORT=${PORT} && \
+	go run cmd/main.go
 
 build:
 	@echo "+ $@"
@@ -31,3 +31,19 @@ run: rm build
 		-d ${CONTAINER}:$(VERSION)
 	@sleep 1
 	@docker logs ${CONTAINER}
+
+go-build:
+	@echo "+ $@"
+	GOARCH=amd64 GOOS=darwin go build -o ${CONTAINER} cmd/main.go
+ 	GOARCH=amd64 GOOS=linux go build -o ${CONTAINER} cmd/main.go
+ 	GOARCH=amd64 GOOS=windows go build -o ${CONTAINER} cmd/main.go
+
+go-run: go-build
+	export BASE_URL=${BASE_URL} && \
+	export PORT=${PORT} && \
+	./${CONTAINER}
+
+go-clean:
+	@echo "+ $@"
+	go clean
+	rm ${CONTAINER}
