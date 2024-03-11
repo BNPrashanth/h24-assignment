@@ -6,6 +6,8 @@ BASE_URL = http://localhost:${PORT}
 
 HAS_EXITED := $(shell docker ps -a | grep ${CONTAINER})
 
+BUILD_EXISTS := $(shell ls -a | grep ${CONTAINER})
+
 run-debug:
 	@echo "+ $@"
 	export BASE_URL=${BASE_URL} && \
@@ -22,7 +24,11 @@ ifdef HAS_EXITED
 	@docker rm -f ${CONTAINER}
 endif
 
-run: rm build
+test:
+	@echo "+ $@"
+	go test -v ./...
+
+run: rm test build
 	@echo "+ $@"
 	@docker run --name ${CONTAINER} \
 		-p ${PORT}:${PORT} \
@@ -32,18 +38,20 @@ run: rm build
 	@sleep 1
 	@docker logs ${CONTAINER}
 
+go-clean:
+ifdef BUILD_EXISTS
+	@echo "+ $@"
+	go clean
+	rm ${CONTAINER}
+endif
+
 go-build:
 	@echo "+ $@"
 	GOARCH=amd64 GOOS=darwin go build -o ${CONTAINER} cmd/main.go
  	GOARCH=amd64 GOOS=linux go build -o ${CONTAINER} cmd/main.go
  	GOARCH=amd64 GOOS=windows go build -o ${CONTAINER} cmd/main.go
 
-go-run: go-build
+go-run: go-clean test go-build
 	export BASE_URL=${BASE_URL} && \
 	export PORT=${PORT} && \
 	./${CONTAINER}
-
-go-clean:
-	@echo "+ $@"
-	go clean
-	rm ${CONTAINER}
